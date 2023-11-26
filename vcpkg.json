@@ -1,0 +1,23 @@
+{
+  "name": "descriptionframework",
+  "version-string": "1.0.0",
+  "description": "Framework to add description to various items of Skyrim",
+  "homepage": "https://github.com/Nightfallstorm/PapyrusTweaks",
+  "license": "GPL-3.0-or-later",
+  "dependencies": [
+    "boost-stl-interfaces",
+    "robin-hood-hashing",
+    "rsm-binary-io",
+    "simpleini",
+    "spdlog",
+    "xbyak",
+    "commonlibsse-ng"
+  ],
+  "builtin-baseline": "bd1ef2df46303989eeb048eb7aa9b816aa46365e",
+  "overrides": [
+    {
+      "name": "fmt",
+      "version": "8.0.1"
+    }
+  ]
+}
