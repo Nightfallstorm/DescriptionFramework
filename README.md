@@ -1,6 +1,6 @@
-# PapyrusTweaks
+# DescriptionFramework
 
-Collection of tweaks and fixes for Skyrim's Papyrus engine.
+Skyrim framework to add descriptions to various items!
 
 ## Requirements
 * [CMake](https://cmake.org/)
@@ -24,9 +24,9 @@ Collection of tweaks and fixes for Skyrim's Papyrus engine.
 
 ## Building
 ```
-git clone https://github.com/Nightfallstorm/PapyrusTweaks.git
-cd PapyrusTweaks
-cmake --preset PapyrusTweaks
+git clone https://github.com/Nightfallstorm/DescriptionFramework.git
+cd DescriptionFramework
+cmake --preset DescriptionFramework
 cmake --build build --config Release
 ```
 
