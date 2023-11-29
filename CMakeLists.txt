@@ -110,16 +110,9 @@ source_group(
 )
 
 # ---- Create DLL ----
+add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${headers} ${sources})
 
-add_library(
-	${PROJECT_NAME}
-	SHARED
-	${headers}
-	${sources}
-	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
-	${CMAKE_CURRENT_BINARY_DIR}/version.rc
-	.clang-format
-)
+add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
 
 target_compile_features(
 	${PROJECT_NAME}
