@@ -52,16 +52,23 @@ void ConfigurationDatabase::Initialize() {
 
 	constexpr auto path = L"Data";
 
-
+	std::vector<std::filesystem::path> filePaths;
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {
 		if (!entry.path().filename().string().ends_with("_DESC.ini")) {
 			continue;
 		}
-		logger::info("Parsing file {}", entry.path().string().c_str());
+		filePaths.push_back(entry.path());
+	}
+
+	std::sort(filePaths.begin(), filePaths.end());
+
+
+	for (const auto& entry : filePaths) {
+		logger::info("Parsing file {}", entry.string().c_str());
 		std::fstream config;
-		config.open(entry.path(), std::ios::in);
+		config.open(entry, std::ios::in);
 		if (!config.is_open()) {
-			logger::error("Couldn't open file {}", entry.path().string().c_str());
+			logger::error("Couldn't open file {}", entry.string().c_str());
 			continue;
 		}
 		std::string line;
