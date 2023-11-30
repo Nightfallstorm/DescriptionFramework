@@ -3,54 +3,89 @@
 
 namespace hooks
 {
-	static inline RE::TESObjectBOOK* book;
-	static inline RE::TESObjectMISC* currentForm;
-
-	struct DescriptionHook
-	{
-		static void thunk(RE::TESDescription* a_self, RE::BSString& a_out, RE::TESForm* a_parent, std::uint32_t a_fieldType)
-		{
-			if (a_parent != book || !ConfigurationDatabase::GetSingleton()->GetConfigurationForObject(currentForm)) {
-				return func(a_self, a_out, a_parent, a_fieldType);
-			}
-			auto& description = ConfigurationDatabase::GetSingleton()->GetConfigurationForObject(currentForm)->description;
-			a_out = description;
-		};
-
-		static inline REL::Relocation<decltype(thunk)> func;
-
-		// Install our hook at the specified address
-		static inline void Install()
-		{
-			REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(51019, 51897), REL::VariantOffset(0xE46, 0x1002, 0xD64) };
-			stl::write_thunk_call<DescriptionHook>(target.address());
-
-			logger::info("DescriptionHook hooked at address {:x}", target.address());
-			logger::info("DescriptionHook hooked at offset {:x}", target.offset());
-		}
-	};
-
 	struct ItemCardPopulateHook
 	{
+		static inline std::uint32_t ICT_ARMOR = 1;
+		static inline std::uint32_t ICT_BOOK = 4;
+		static inline std::uint32_t ICT_POTION = 6;
+		
+
 		static void thunk(RE::ItemCard* itemCard, RE::TESBoundObject** a_item, char a3)
 		{
-			if (!(*a_item)->Is(RE::FormType::Misc)) {
+			if (!itemCard || !a_item || !*a_item || getDescription(*a_item) == "") {
 				return func(itemCard, a_item, a3);
 			}
-			initializeBook((*a_item)->As<RE::TESObjectMISC>());
-			auto orig = *a_item;
-			*a_item = book;
+
 			func(itemCard, a_item, a3);
-			*a_item = orig;
+			handleMiscItems(itemCard, *a_item);
+			handleSoulGems(itemCard, *a_item);
+			handleIngredients(itemCard, *a_item);
+			handleEffectsItems(itemCard, *a_item);
+			handleDescriptionItems(itemCard, *a_item);
 		};
 
-		static inline void initializeBook(RE::TESObjectMISC* a_item)
+		static const char* getDescription(RE::TESBoundObject* a_item)
 		{
-			book = RE::TESForm::LookupByID(0xb7736)->As<RE::TESObjectBOOK>();
-			book->weight = a_item->weight;
-			book->fullName = a_item->fullName;
-			book->value = a_item->value;
-			currentForm = a_item;
+			auto database = ConfigurationDatabase::GetSingleton();
+			if (!database->GetConfigurationForObject(a_item)) {
+				return "";
+			}
+			return database->GetConfigurationForObject(a_item)->description.c_str();
+		}
+
+		static void handleMiscItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
+		{
+			if (a_item->Is(RE::FormType::Misc)) {
+				// Fake the MISC object as a BOOK so the UI will load the description label
+				auto typeValue = RE::GFxValue(ICT_BOOK);
+				itemCard->obj.SetMember("type", typeValue);
+
+				auto emptyValue = RE::GFxValue("");
+				itemCard->obj.SetMember("skillText", emptyValue);
+			}
+		}
+
+		static void handleEffectsItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
+		{
+			// TODO: Armor and Weapons show as enchanted if given an effect, excluding for now until we fix
+			if (a_item->Is(RE::FormType::Weapon) || a_item->Is(RE::FormType::Armor)) {
+				return;
+			}
+
+			// Potions, Food (Plus any items faked as a potion/food)
+			RE::GFxValue origEffect = RE::GFxValue("");
+			std::string origEffectDesc = "";
+			if (itemCard->obj.HasMember("effects") && itemCard->obj.GetMember("effects", &origEffect)) {
+				std::string origString = origEffect.GetString();
+				origString.erase(remove(origString.begin(), origString.end(), ' '), origString.end());
+				if (!origString.empty()) {
+					origEffectDesc = std::string(origEffect.GetString()) + "\n";
+				}
+			}
+			auto effectsDesc = origEffectDesc + getDescription(a_item);
+			auto effectsValue = RE::GFxValue(effectsDesc);
+			itemCard->obj.SetMember("effects", effectsValue);
+		}
+
+		static void handleDescriptionItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
+		{
+			// Books (Plus any items faked as a book)
+			auto descriptionValue = RE::GFxValue(getDescription(a_item));
+			itemCard->obj.SetMember("description", descriptionValue);
+		}
+
+		static void handleIngredients(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
+		{
+			// TODO: Trick ingredients as a potion, and mimic the same 4 effect labels with a description?
+			if (a_item->Is(RE::FormType::Ingredient)) {
+			}
+		}
+
+		static void handleSoulGems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
+		{
+			// TODO: Trick soul gems as a potion to get HTML text benefit?
+			if (a_item->Is(RE::FormType::SoulGem)) {
+			}
 		}
 
 		static inline REL::Relocation<decltype(thunk)> func;
@@ -85,8 +120,6 @@ namespace hooks
 			REL::Relocation<std::uintptr_t> target5{ RELOCATION_ID(50973, 51852), REL::VariantOffset(0x80, 0x7A, 0x80) };
 			stl::write_thunk_call<ItemCardPopulateHook>(target5.address());
 
-						
-
 			logger::info("ItemCardPopulateHook hooked at address {:x}", target5.address());
 			logger::info("ItemCardPopulateHook hooked at offset {:x}", target5.offset());
 
@@ -103,6 +136,5 @@ namespace hooks
 	static inline void InstallHooks()
 	{
 		ItemCardPopulateHook::Install();
-		DescriptionHook::Install();
 	}
 }

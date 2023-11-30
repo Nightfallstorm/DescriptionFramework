@@ -3,7 +3,7 @@
 
 struct DescriptionConfiguration
 {
-	RE::TESObjectMISC* object;
+	RE::TESBoundObject* object;
 	std::string description;
 };
 
@@ -32,7 +32,7 @@ public:
 	// Load entries from the various entry files
 	void Initialize();
 
-	DescriptionConfiguration* GetConfigurationForObject(RE::TESObjectMISC* a_object);
+	DescriptionConfiguration* GetConfigurationForObject(RE::TESBoundObject* a_object);
 
 private:
 	std::vector<DescriptionConfiguration*> entries;

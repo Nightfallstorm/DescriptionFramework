@@ -82,7 +82,7 @@ void ConfigurationDatabase::Initialize() {
 				logger::error("Invalid line setup, not enough info!");
 				continue;
 			}
-			auto object = GetFormFromString<RE::TESObjectMISC>(tokens[0]); 
+			auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]); 
 			auto& description = tokens[1];
 			if (!object || description.size() <= 0) {
 				continue;
@@ -97,7 +97,7 @@ void ConfigurationDatabase::Initialize() {
 	logger::info("Config APIs fully parsed!");
 }
 
-DescriptionConfiguration* ConfigurationDatabase::GetConfigurationForObject(RE::TESObjectMISC* a_object) {
+DescriptionConfiguration* ConfigurationDatabase::GetConfigurationForObject(RE::TESBoundObject* a_object) {
 	if (!a_object) {
 		return nullptr;
 	}
