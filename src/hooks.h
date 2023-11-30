@@ -22,7 +22,7 @@ namespace hooks
 		// Install our hook at the specified address
 		static inline void Install()
 		{
-			REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(51019, 51897), REL::VariantOffset(0xE46, 0x1002, 0x0) };
+			REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(51019, 51897), REL::VariantOffset(0xE46, 0x1002, 0xD64) };
 			stl::write_thunk_call<DescriptionHook>(target.address());
 
 			logger::info("DescriptionHook hooked at address {:x}", target.address());
@@ -58,25 +58,45 @@ namespace hooks
 		// Install our hook at the specified address
 		static inline void Install()
 		{
-			REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(50005, 50949), REL::VariantOffset(0x80, 0x80, 0x0) };
+			REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(50005, 50949), REL::VariantOffset(0x80, 0x80, 0x80) };
 			stl::write_thunk_call<ItemCardPopulateHook>(target.address());
-
-			REL::Relocation<std::uintptr_t> target2{ RELOCATION_ID(50201, 51130), REL::VariantOffset(0xB2, 0xB2, 0x0) };
-			stl::write_thunk_call<ItemCardPopulateHook>(target2.address());
-
-			REL::Relocation<std::uintptr_t> target3{ RELOCATION_ID(50297, 51218), REL::VariantOffset(0x35, 0x35, 0x0) };
-			stl::write_thunk_call<ItemCardPopulateHook>(target3.address());
-
-			REL::Relocation<std::uintptr_t> target4{ RELOCATION_ID(50674, 51569), REL::VariantOffset(0x80, 0x7A, 0x0) };
-			stl::write_thunk_call<ItemCardPopulateHook>(target4.address());
-
-			REL::Relocation<std::uintptr_t> target5{ RELOCATION_ID(50973, 51852), REL::VariantOffset(0x80, 0x7A, 0x0) };
-			stl::write_thunk_call<ItemCardPopulateHook>(target5.address());
-
-			// TODO: One exclusive AE address missing
 
 			logger::info("ItemCardPopulateHook hooked at address {:x}", target.address());
 			logger::info("ItemCardPopulateHook hooked at offset {:x}", target.offset());
+
+			REL::Relocation<std::uintptr_t> target2{ RELOCATION_ID(50201, 51130), REL::VariantOffset(0xB2, 0xB2, 0xB2) };
+			stl::write_thunk_call<ItemCardPopulateHook>(target2.address());
+
+			logger::info("ItemCardPopulateHook hooked at address {:x}", target2.address());
+			logger::info("ItemCardPopulateHook hooked at offset {:x}", target2.offset());
+
+			REL::Relocation<std::uintptr_t> target3{ RELOCATION_ID(50297, 51218), REL::VariantOffset(0x35, 0x35, 0x35) };
+			stl::write_thunk_call<ItemCardPopulateHook>(target3.address());
+
+			logger::info("ItemCardPopulateHook hooked at address {:x}", target3.address());
+			logger::info("ItemCardPopulateHook hooked at offset {:x}", target3.offset());
+
+			REL::Relocation<std::uintptr_t> target4{ RELOCATION_ID(50674, 51569), REL::VariantOffset(0x80, 0x7A, 0x80) };
+			stl::write_thunk_call<ItemCardPopulateHook>(target4.address());
+
+			logger::info("ItemCardPopulateHook hooked at address {:x}", target4.address());
+			logger::info("ItemCardPopulateHook hooked at offset {:x}", target4.offset());
+
+			REL::Relocation<std::uintptr_t> target5{ RELOCATION_ID(50973, 51852), REL::VariantOffset(0x80, 0x7A, 0x80) };
+			stl::write_thunk_call<ItemCardPopulateHook>(target5.address());
+
+						
+
+			logger::info("ItemCardPopulateHook hooked at address {:x}", target5.address());
+			logger::info("ItemCardPopulateHook hooked at offset {:x}", target5.offset());
+
+			if (REL::Module::IsAE()) {
+				REL::Relocation<std::uintptr_t> target6{ RELOCATION_ID(0, 51458), REL::VariantOffset(0x0, 0x87, 0x0) };
+				stl::write_thunk_call<ItemCardPopulateHook>(target6.address());
+
+				logger::info("ItemCardPopulateHook hooked at address {:x}", target6.address());
+				logger::info("ItemCardPopulateHook hooked at offset {:x}", target6.offset());
+			}
 		}
 	};
 
