@@ -35,6 +35,7 @@ public:
 	DescriptionConfiguration* GetConfigurationForObject(RE::TESBoundObject* a_object);
 
 private:
+	void parseConfigs(std::filesystem::path configFile);
 	std::vector<DescriptionConfiguration*> entries;
 };
 

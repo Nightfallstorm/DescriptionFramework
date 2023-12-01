@@ -47,6 +47,38 @@ T* GetFormFromString(std::string line)
 	return nullptr;
 }
 
+void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
+{
+	logger::info("Parsing file {}", configFile.string().c_str());
+	std::fstream config;
+	config.open(configFile, std::ios::in);
+	if (!config.is_open()) {
+		logger::error("Couldn't open file {}", configFile.string().c_str());
+		return;
+	}
+	std::string line;
+	while (std::getline(config, line)) {
+		line = sanitizeLine(line);
+		if (line.empty()) {
+			continue;
+		}
+		auto tokens = utils::split_string(line, '|');
+		if (tokens.size() < 2) {
+			logger::error("Invalid line setup, not enough info!");
+			continue;
+		}
+		auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]);
+		auto& description = tokens[1];
+		if (!object || description.size() <= 0) {
+			continue;
+		}
+		DescriptionConfiguration* config = new DescriptionConfiguration();
+		config->object = object;
+		config->description = description;
+		entries.emplace_back(config);
+	}
+}
+
 void ConfigurationDatabase::Initialize() {
 	logger::info("Reading descriptions configs...");
 
@@ -54,44 +86,26 @@ void ConfigurationDatabase::Initialize() {
 
 	std::vector<std::filesystem::path> filePaths;
 	for (const auto& entry : std::filesystem::directory_iterator(path)) {
-		if (!entry.path().filename().string().ends_with("_DESC.ini")) {
+		try {
+			if (!entry.path().filename().string().ends_with("_DESC.ini")) {
+				continue;
+			}
+			 
+			filePaths.push_back(entry.path());
+		} catch(...) {
 			continue;
-		}
-		filePaths.push_back(entry.path());
+		}		
 	}
 
 	std::sort(filePaths.begin(), filePaths.end());
 
-
 	for (const auto& entry : filePaths) {
-		logger::info("Parsing file {}", entry.string().c_str());
-		std::fstream config;
-		config.open(entry, std::ios::in);
-		if (!config.is_open()) {
-			logger::error("Couldn't open file {}", entry.string().c_str());
+		try {
+			parseConfigs(entry);
+		} catch (...) {
+			logger::error("Error parsing {}", entry.string());
 			continue;
-		}
-		std::string line;
-		while (std::getline(config, line)) {
-			line = sanitizeLine(line);
-			if (line.empty()) {
-				continue;
-			}
-			auto tokens = utils::split_string(line, '|');
-			if (tokens.size() < 2) {
-				logger::error("Invalid line setup, not enough info!");
-				continue;
-			}
-			auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]); 
-			auto& description = tokens[1];
-			if (!object || description.size() <= 0) {
-				continue;
-			}
-			DescriptionConfiguration* config = new DescriptionConfiguration();
-			config->object = object;
-			config->description = description;
-			entries.emplace_back(config);
-		}
+		}	
 	}
 
 	logger::info("Config APIs fully parsed!");
