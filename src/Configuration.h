@@ -3,8 +3,8 @@
 
 struct DescriptionConfiguration
 {
-	RE::TESBoundObject* object;
-	std::string description;
+	std::string description = "";
+	int priority = 0;
 };
 
 
@@ -36,6 +36,6 @@ public:
 
 private:
 	void parseConfigs(std::filesystem::path configFile);
-	std::vector<DescriptionConfiguration*> entries;
+	std::map<RE::FormID, DescriptionConfiguration*> descriptionMap;
 };
 

@@ -23,7 +23,7 @@ T* GetFormFromString(std::string line)
 	}
 
 	if (line.find('~') == std::string::npos) {
-		logger::error("missing plugin: {}", line);
+		logger::error("		missing plugin: {}", line);
 		return nullptr;
 	}
 
@@ -37,7 +37,7 @@ T* GetFormFromString(std::string line)
 
 	form = RE::TESDataHandler::GetSingleton()->LookupForm(formID, plugin);
 	if (form == nullptr) {
-		logger::error("invalid form ID: {}", line);
+		logger::error("		invalid form ID: {}", line);
 		return nullptr;
 	}
 
@@ -62,20 +62,39 @@ void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 		if (line.empty()) {
 			continue;
 		}
+		logger::info("	Parsing line {}", line);
 		auto tokens = utils::split_string(line, '|');
 		if (tokens.size() < 2) {
-			logger::error("Invalid line setup, not enough info!");
+			logger::error("		Invalid line setup, not enough info!");
 			continue;
 		}
 		auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]);
 		auto& description = tokens[1];
+		int priority = 0;
+		if (tokens.size() >= 3) {
+			priority = std::stoi(tokens[2]);
+		}
 		if (!object || description.size() <= 0) {
 			continue;
 		}
+
 		DescriptionConfiguration* config = new DescriptionConfiguration();
-		config->object = object;
 		config->description = description;
-		entries.emplace_back(config);
+		config->priority = priority;
+
+		if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority >= priority) {
+			auto desc = descriptionMap[object->formID];
+			logger::info("		Overwritten by \'{}\' with priority {}", desc->description, desc->priority);
+			continue;
+		}
+
+		if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority < priority) {
+			auto desc = descriptionMap[object->formID];
+			logger::info("		Overwriting previous entry \'{}\' with priority {}", desc->description, desc->priority);
+		}
+
+		descriptionMap[object->formID] = config;
+		logger::info("		Entry inserted successfully!");
 	}
 }
 
@@ -101,6 +120,7 @@ void ConfigurationDatabase::Initialize() {
 
 	for (const auto& entry : filePaths) {
 		try {
+			logger::info("Parsing {}", entry.string());
 			parseConfigs(entry);
 		} catch (...) {
 			logger::error("Error parsing {}", entry.string());
@@ -116,10 +136,8 @@ DescriptionConfiguration* ConfigurationDatabase::GetConfigurationForObject(RE::T
 		return nullptr;
 	}
 
-	for (auto entry : entries) {
-		if (entry->object->formID == a_object->formID) {
-			return entry;
-		}
+	if (descriptionMap.contains(a_object->formID)) {
+		return descriptionMap[a_object->formID];
 	}
 
 	return nullptr;
