@@ -8,7 +8,6 @@ namespace hooks
 		static inline std::uint32_t ICT_ARMOR = 1;
 		static inline std::uint32_t ICT_BOOK = 4;
 		static inline std::uint32_t ICT_POTION = 6;
-		
 
 		static void thunk(RE::ItemCard* itemCard, RE::TESBoundObject** a_item, char a3)
 		{
@@ -35,13 +34,18 @@ namespace hooks
 
 		static void handleMiscItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
 		{
-			if (a_item->Is(RE::FormType::Misc)) {
-				// Fake the MISC object as a BOOK so the UI will load the description label
-				auto typeValue = RE::GFxValue(ICT_BOOK);
+			auto newType = ICT_BOOK;  // Fake the MISC object as a BOOK so the UI will load the description label
+			auto htmlRegex = std::regex(".*<.*>.*</.*>.*");
+			auto desc = std::string(getDescription(a_item));
+			if (desc.size() > 50 || std::regex_match(desc, htmlRegex)) {
+				// Use potion's HTML text instead for the auto shrink on large texts and for HTML stuff
+				// Note: On small texts the text is misaligned :(
+				logger::info("Using html on {}", desc);
+				newType = ICT_POTION;
+			}
+			if (a_item->Is(RE::FormType::Misc) || a_item->Is(RE::FormType::Light)) {
+				auto typeValue = RE::GFxValue(newType);
 				itemCard->obj.SetMember("type", typeValue);
-
-				auto emptyValue = RE::GFxValue("");
-				itemCard->obj.SetMember("skillText", emptyValue);
 			}
 		}
 
@@ -133,8 +137,36 @@ namespace hooks
 		}
 	};
 
+	namespace MenuHooks {
+		
+		struct InventoryMenuHook
+		{
+			static void thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				func(a_menu, a_interval, a_currentTime);
+				//logger::info("Fixing book label");
+				//const RE::GFxValue htmlTextType = "true";
+
+				//const RE::GFxValue shrink = "shrink";
+				//a_menu->uiMovie->SetVariable("_root.Menu_mc.itemCard.BookDescriptionLabel.textAutoSize", shrink, RE::GFxMovie::SetVarType::kPermanent);
+				//a_menu->uiMovie->SetVariable("_root.Menu_mc.itemCard.BookDescriptionLabel.htmlText", htmlTextType, RE::GFxMovie::SetVarType::kPermanent);
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				// TODO: Future update to fix book description labels not being HTML supported
+				//stl::write_vfunc<RE::InventoryMenu, InventoryMenuHook>();
+			}
+		};
+	}
 	static inline void InstallHooks()
 	{
 		ItemCardPopulateHook::Install();
+		//MenuHooks::InventoryMenuHook::Install();
 	}
 }

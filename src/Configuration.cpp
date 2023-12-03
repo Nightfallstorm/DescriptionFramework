@@ -2,13 +2,17 @@
 #include "Configuration.h"
 #include "Utils.h"
 #include "MergeMapperPluginAPI.h"
+#include <cstring>
 
 
-std::string sanitizeLine(std::string line) {
+static std::string sanitizeLine(std::string line) {
 	auto parsingLine = std::string(line);
-	// Strip the comments and the whitespace
-	if (parsingLine.find('#') != std::string::npos) {
-		parsingLine.erase(parsingLine.find('#'));
+
+	// Strip comments
+	auto trimmedLine = std::string(parsingLine); // trim the whitespace and check if the first character is # or ;
+	trimmedLine.erase(std::remove(trimmedLine.begin(), trimmedLine.end(), ' '), trimmedLine.end());
+	if (parsingLine[0] == '#' || parsingLine[0] == ';') {
+		return "";
 	}
 
 	return parsingLine;
@@ -98,6 +102,16 @@ void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 	}
 }
 
+static bool filesystempathcompare(std::filesystem::path a_first, std::filesystem::path a_second) {
+	// case insensitive filesystem path comparing
+	// if there's an easier way to do this and you're reading this, feel free to shoot a PR!
+	auto a_firstString = a_first.string();
+	auto a_secondString = a_second.string();
+	std::transform(a_firstString.cbegin(), a_firstString.cend(), a_firstString.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::transform(a_secondString.cbegin(), a_secondString.cend(), a_secondString.begin(), [](unsigned char c) { return std::tolower(c); });
+	return a_firstString.compare(a_secondString) < 0;
+}
+
 void ConfigurationDatabase::Initialize() {
 	logger::info("Reading descriptions configs...");
 
@@ -116,7 +130,7 @@ void ConfigurationDatabase::Initialize() {
 		}		
 	}
 
-	std::sort(filePaths.begin(), filePaths.end());
+	std::sort(filePaths.begin(), filePaths.end(), filesystempathcompare);
 
 	for (const auto& entry : filePaths) {
 		try {
