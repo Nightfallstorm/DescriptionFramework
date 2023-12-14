@@ -43,7 +43,7 @@ namespace hooks
 				logger::info("Using html on {}", desc);
 				newType = ICT_POTION;
 			}
-			if (a_item->Is(RE::FormType::Misc) || a_item->Is(RE::FormType::Light)) {
+			if (a_item->Is(RE::FormType::Misc) || a_item->Is(RE::FormType::Light) || a_item->Is(RE::FormType::KeyMaster)) {
 				auto typeValue = RE::GFxValue(newType);
 				itemCard->obj.SetMember("type", typeValue);
 			}
