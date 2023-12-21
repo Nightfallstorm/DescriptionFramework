@@ -8,6 +8,7 @@ namespace hooks
 		static inline std::uint32_t ICT_ARMOR = 1;
 		static inline std::uint32_t ICT_BOOK = 4;
 		static inline std::uint32_t ICT_POTION = 6;
+		static inline auto htmlRegex = std::regex(".*<.*>.*</.*>.*");
 
 		static void thunk(RE::ItemCard* itemCard, RE::TESBoundObject** a_item, char a3)
 		{
@@ -18,6 +19,7 @@ namespace hooks
 			func(itemCard, a_item, a3);
 			handleMiscItems(itemCard, *a_item);
 			handleSoulGems(itemCard, *a_item);
+			handleBooks(itemCard, *a_item);
 			handleIngredients(itemCard, *a_item);
 			handleEffectsItems(itemCard, *a_item);
 			handleDescriptionItems(itemCard, *a_item);
@@ -35,7 +37,6 @@ namespace hooks
 		static void handleMiscItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
 		{
 			auto newType = ICT_BOOK;  // Fake the MISC object as a BOOK so the UI will load the description label
-			auto htmlRegex = std::regex(".*<.*>.*</.*>.*");
 			auto desc = std::string(getDescription(a_item));
 			if (desc.size() > 50 || std::regex_match(desc, htmlRegex)) {
 				// Use potion's HTML text instead for the auto shrink on large texts and for HTML stuff
@@ -89,6 +90,18 @@ namespace hooks
 		{
 			// TODO: Trick soul gems as a potion to get HTML text benefit?
 			if (a_item->Is(RE::FormType::SoulGem)) {
+			}
+		}
+
+		static void handleBooks(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
+		{
+			if (a_item->Is(RE::FormType::Book)) {
+				auto desc = std::string(getDescription(a_item));
+				if (desc.size() > 50 || std::regex_match(desc, htmlRegex)) {
+					logger::info("Using html on book {}", desc);
+					auto typeValue = RE::GFxValue(ICT_POTION);
+					itemCard->obj.SetMember("type", typeValue);
+				}
 			}
 		}
 
