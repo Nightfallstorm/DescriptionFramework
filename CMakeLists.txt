@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 set(NAME "DescriptionFramework")
-set(VERSION 1.2.2)
+set(VERSION 1.3.0)
 
 # ---- Cache build vars ----
 
