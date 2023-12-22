@@ -54,14 +54,14 @@ T* GetFormFromString(std::string line)
 void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 {
 	logger::info("Parsing file {}", configFile.string().c_str());
-	std::fstream config;
-	config.open(configFile, std::ios::in);
-	if (!config.is_open()) {
+	std::fstream file;
+	file.open(configFile, std::ios::in);
+	if (!file.is_open()) {
 		logger::error("Couldn't open file {}", configFile.string().c_str());
 		return;
 	}
 	std::string line;
-	while (std::getline(config, line)) {
+	while (std::getline(file, line)) {
 		line = sanitizeLine(line);
 		if (line.empty()) {
 			continue;
@@ -107,8 +107,8 @@ static bool filesystempathcompare(std::filesystem::path a_first, std::filesystem
 	// if there's an easier way to do this and you're reading this, feel free to shoot a PR!
 	auto a_firstString = a_first.string();
 	auto a_secondString = a_second.string();
-	std::transform(a_firstString.cbegin(), a_firstString.cend(), a_firstString.begin(), [](unsigned char c) { return std::tolower(c); });
-	std::transform(a_secondString.cbegin(), a_secondString.cend(), a_secondString.begin(), [](unsigned char c) { return std::tolower(c); });
+	std::transform(a_firstString.cbegin(), a_firstString.cend(), a_firstString.begin(), [](unsigned char c) { return (char) std::tolower(c); });
+	std::transform(a_secondString.cbegin(), a_secondString.cend(), a_secondString.begin(), [](unsigned char c) { return (char) std::tolower(c); });
 	return a_firstString.compare(a_secondString) < 0;
 }
 
