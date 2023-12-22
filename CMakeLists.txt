@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 set(NAME "DescriptionFramework")
 set(VERSION 1.2.2)
 
@@ -11,14 +11,14 @@ macro(set_from_environment VARIABLE)
 endmacro()
 
 set_from_environment(VCPKG_ROOT)
+add_compile_definitions(SKYRIM)
+set(CommonLibPath "extern/CommonLibSSE-NG")
 set(CommonLibName "CommonLibSSE")
-set_from_environment(Skyrim64Path)
-set(SkyrimPath ${Skyrim64Path})
-set(SkyrimVersion "Skyrim SSE")
+set(GameVersion "Skyrim")
 
 message(
 	STATUS
-	"Building ${NAME} ${VERSION}."
+	"Building ${NAME} ${VERSION} for ${SkyrimVersion} at ${SkyrimPath} with ${CommonLibName} at ${CommonLibPath}."
 )
 
 if (DEFINED VCPKG_ROOT)
@@ -84,10 +84,14 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 
 # ---- Dependencies ----
 
-find_package(CommonLibSSE CONFIG REQUIRED)
-
-find_package(robin_hood CONFIG REQUIRED)
-find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+if (DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibPath})
+	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
+else ()
+	message(
+		FATAL_ERROR
+		"Variable ${CommonLibName}Path is not set."
+	)
+endif()
 
 # ---- Add source files ----
 
@@ -110,9 +114,16 @@ source_group(
 )
 
 # ---- Create DLL ----
-add_commonlibsse_plugin(${PROJECT_NAME} SOURCES ${headers} ${sources})
 
-add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
+add_library(
+	${PROJECT_NAME}
+	SHARED
+	${headers}
+	${sources}
+	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
+	${CMAKE_CURRENT_BINARY_DIR}/version.rc
+	.clang-format
+)
 
 target_compile_features(
 	${PROJECT_NAME}
@@ -136,9 +147,8 @@ target_include_directories(
 
 target_link_libraries(
 	${PROJECT_NAME}
-	PRIVATE
+	PUBLIC
 		${CommonLibName}::${CommonLibName}
-		robin_hood::robin_hood
 )
 
 target_precompile_headers(

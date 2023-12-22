@@ -5,15 +5,14 @@
   "homepage": "https://github.com/Nightfallstorm/DescriptionFramework",
   "license": "GPL-3.0-or-later",
   "dependencies": [
-    "boost-stl-interfaces",
-    "robin-hood-hashing",
-    "rsm-binary-io",
-    "simpleini",
+    "fmt",
+    "directxtk",
+    "rapidcsv",
     "spdlog",
     "xbyak",
-    "commonlibsse-ng"
+    "catch2"
   ],
-  "builtin-baseline": "bd1ef2df46303989eeb048eb7aa9b816aa46365e",
+  "builtin-baseline": "417119555f155f6044dec7a379cd25466e339873",
   "overrides": [
     {
       "name": "fmt",
