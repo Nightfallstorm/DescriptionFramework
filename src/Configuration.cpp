@@ -51,6 +51,47 @@ T* GetFormFromString(std::string line)
 	return nullptr;
 }
 
+void ConfigurationDatabase::parseLine(std::string line)
+{
+	line = sanitizeLine(line);
+	if (line.empty()) {
+		return;
+	}
+	logger::info("	Parsing line {}", line);
+	auto tokens = utils::split_string(line, '|');
+	if (tokens.size() < 2) {
+		logger::error("		Invalid line setup, not enough info!");
+		return;
+	}
+	auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]);
+	auto& description = tokens[1];
+	int priority = 0;
+	if (tokens.size() >= 3) {
+		priority = std::stoi(tokens[2]);
+	}
+	if (!object || description.size() <= 0) {
+		return;
+	}
+
+	DescriptionConfiguration* config = new DescriptionConfiguration();
+	config->description = description;
+	config->priority = priority;
+
+	if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority >= priority) {
+		auto desc = descriptionMap[object->formID];
+		logger::info("		Overwritten by \'{}\' with priority {}", desc->description, desc->priority);
+		return;
+	}
+
+	if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority < priority) {
+		auto desc = descriptionMap[object->formID];
+		logger::info("		Overwriting previous entry \'{}\' with priority {}", desc->description, desc->priority);
+	}
+
+	descriptionMap[object->formID] = config;
+	logger::info("		Entry inserted successfully!");
+}
+
 void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 {
 	logger::info("Parsing file {}", configFile.string().c_str());
@@ -62,43 +103,11 @@ void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 	}
 	std::string line;
 	while (std::getline(file, line)) {
-		line = sanitizeLine(line);
-		if (line.empty()) {
-			continue;
+		try {	
+			parseLine(line);
+		} catch (...) {
+			logger::warn("	Error parsing line {}", line);
 		}
-		logger::info("	Parsing line {}", line);
-		auto tokens = utils::split_string(line, '|');
-		if (tokens.size() < 2) {
-			logger::error("		Invalid line setup, not enough info!");
-			continue;
-		}
-		auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]);
-		auto& description = tokens[1];
-		int priority = 0;
-		if (tokens.size() >= 3) {
-			priority = std::stoi(tokens[2]);
-		}
-		if (!object || description.size() <= 0) {
-			continue;
-		}
-
-		DescriptionConfiguration* config = new DescriptionConfiguration();
-		config->description = description;
-		config->priority = priority;
-
-		if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority >= priority) {
-			auto desc = descriptionMap[object->formID];
-			logger::info("		Overwritten by \'{}\' with priority {}", desc->description, desc->priority);
-			continue;
-		}
-
-		if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority < priority) {
-			auto desc = descriptionMap[object->formID];
-			logger::info("		Overwriting previous entry \'{}\' with priority {}", desc->description, desc->priority);
-		}
-
-		descriptionMap[object->formID] = config;
-		logger::info("		Entry inserted successfully!");
 	}
 }
 

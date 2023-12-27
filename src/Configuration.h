@@ -36,6 +36,7 @@ public:
 
 private:
 	void parseConfigs(std::filesystem::path configFile);
+	void parseLine(std::string line);
 	std::map<RE::FormID, DescriptionConfiguration*> descriptionMap;
 };
 
