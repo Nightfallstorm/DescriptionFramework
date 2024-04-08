@@ -52,11 +52,6 @@ namespace hooks
 
 		static void handleEffectsItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)
 		{
-			// TODO: Armor and Weapons show as enchanted if given an effect, excluding for now until we fix
-			if (a_item->Is(RE::FormType::Weapon) || a_item->Is(RE::FormType::Armor)) {
-				return;
-			}
-
 			// Potions, Food (Plus any items faked as a potion/food)
 			RE::GFxValue origEffect = RE::GFxValue("");
 			std::string origEffectDesc = "";
