@@ -4,4 +4,5 @@ set(headers ${headers}
 	src/Configuration.h
 	src/Utils.h
 	src/MergeMapperPluginAPI.h
+	src/Settings.h
 )

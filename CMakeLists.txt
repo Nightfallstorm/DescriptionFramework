@@ -84,6 +84,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 
 # ---- Dependencies ----
 
+find_package(robin_hood CONFIG REQUIRED)
 if (DEFINED CommonLibPath AND NOT ${CommonLibPath} STREQUAL "" AND IS_DIRECTORY ${CommonLibPath})
 	add_subdirectory(${CommonLibPath} ${CommonLibName} EXCLUDE_FROM_ALL)
 else ()
@@ -149,6 +150,7 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PUBLIC
 		${CommonLibName}::${CommonLibName}
+		robin_hood::robin_hood
 )
 
 target_precompile_headers(

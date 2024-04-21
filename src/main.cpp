@@ -1,6 +1,7 @@
 #include "hooks.h"
 #include "Configuration.h"
 #include "MergeMapperPluginAPI.h"
+#include "Settings.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
@@ -90,6 +91,7 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 	messaging->RegisterListener(MessageHandler);
 
 	hooks::InstallHooks();
+	Settings::GetSingleton()->Load();
 
 	return true;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Configuration.h"
+#include "Settings.h"
 
 namespace hooks
 {
@@ -27,11 +28,22 @@ namespace hooks
 
 		static const char* getDescription(RE::TESBoundObject* a_item)
 		{
+			auto settings = Settings::GetSingleton();
 			auto database = ConfigurationDatabase::GetSingleton();
 			if (!database->GetConfigurationForObject(a_item)) {
 				return "";
 			}
-			return database->GetConfigurationForObject(a_item)->description.c_str();
+			auto desc = database->GetConfigurationForObject(a_item)->description.c_str();
+			auto prefix = settings->tweaks.prefix != "" ? settings->tweaks.prefix + " " : "";
+			auto suffix = settings->tweaks.suffix != "" ? " " + settings->tweaks.suffix : "";
+			auto font = settings->GetFontString();
+
+			std::string* description = new std::string(font);
+			description->append(prefix);
+			description->append(desc);
+			description->append(suffix);
+			logger::info("Using description {}", description->c_str());
+			return description->c_str();
 		}
 
 		static void handleMiscItems(RE::ItemCard* itemCard, RE::TESBoundObject* a_item)

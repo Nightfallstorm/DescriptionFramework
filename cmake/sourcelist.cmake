@@ -4,4 +4,5 @@ set(sources ${sources}
 	src/Configuration.cpp
 	src/Utils.cpp
 	src/MergeMapperPluginAPI.cpp
+	src/Settings.cpp
 )

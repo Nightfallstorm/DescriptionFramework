@@ -5,6 +5,8 @@
   "homepage": "https://github.com/Nightfallstorm/DescriptionFramework",
   "license": "GPL-3.0-or-later",
   "dependencies": [
+    "robin-hood-hashing",
+    "simpleini",
     "fmt",
     "directxtk",
     "rapidcsv",
