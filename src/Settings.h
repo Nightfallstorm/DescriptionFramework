@@ -78,11 +78,20 @@ public:
 		}
 	}
 
+	const char* GetAlignment() {
+		if (tweaks.alignment == "") {
+			return "";
+		} else {
+			return std::format("<p align='{}'>", tweaks.alignment).c_str();
+		}
+	}
+
 	const char* GetFontString()
 	{
 		std::string* font = new std::string(GetFontFace());
 		font->append(GetFontColor());
 		font->append(GetFontSize());
+		font->append(GetAlignment());
 		return font->c_str();
 	}
 
@@ -95,6 +104,7 @@ public:
 		SkyrimFont font{ -1 };
 		std::string color{ "" };
 		int size{ -1 };
+		std::string alignment{ "" };
 	} tweaks;
 
 private:
