@@ -9,7 +9,7 @@ namespace hooks
 		static inline std::uint32_t ICT_ARMOR = 1;
 		static inline std::uint32_t ICT_BOOK = 4;
 		static inline std::uint32_t ICT_POTION = 6;
-		static inline auto htmlRegex = std::regex(".*<.*>");
+		static inline auto htmlRegex = std::regex(".*<.*>.*");
 
 		static void thunk(RE::ItemCard* itemCard, RE::TESBoundObject** a_item, char a3)
 		{
