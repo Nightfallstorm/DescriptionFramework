@@ -2,6 +2,7 @@
 #include "Configuration.h"
 #include "MergeMapperPluginAPI.h"
 #include "Settings.h"
+#include "Papyrus.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
@@ -89,6 +90,9 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 
 	auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);
+
+	auto papyrus = SKSE::GetPapyrusInterface();
+	papyrus->Register(Papyrus::Bind);
 
 	hooks::InstallHooks();
 	Settings::GetSingleton()->Load();

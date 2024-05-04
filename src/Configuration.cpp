@@ -73,22 +73,18 @@ void ConfigurationDatabase::parseLine(std::string line)
 		return;
 	}
 
-	DescriptionConfiguration* config = new DescriptionConfiguration();
-	config->description = description;
-	config->priority = priority;
-
-	if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority >= priority) {
-		auto desc = descriptionMap[object->formID];
-		logger::info("		Overwritten by \'{}\' with priority {}", desc->description, desc->priority);
+	if (tempMap.contains(object->formID) && tempMap[object->formID].second >= priority) {
+		auto& desc = tempMap[object->formID];
+		logger::info("		Entry is overwritten by \'{}\' with priority {}", desc.first, desc.second);
 		return;
 	}
 
-	if (descriptionMap.contains(object->formID) && descriptionMap[object->formID]->priority < priority) {
-		auto desc = descriptionMap[object->formID];
-		logger::info("		Overwriting previous entry \'{}\' with priority {}", desc->description, desc->priority);
+	if (tempMap.contains(object->formID) && tempMap[object->formID].second < priority) {
+		auto& desc = tempMap[object->formID];
+		logger::info("		Overwriting previous entry \'{}\' with priority {}", desc.first, desc.second);
 	}
 
-	descriptionMap[object->formID] = config;
+	tempMap[object->formID] = { description, priority };
 	logger::info("		Entry inserted successfully!");
 }
 
@@ -108,6 +104,11 @@ void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 		} catch (...) {
 			logger::warn("	Error parsing line {}", line);
 		}
+	}
+
+	// Convert tempMap to the description map
+	for (auto& [formID, config] : tempMap) {
+		descriptionMap.emplace(formID, config.first);
 	}
 }
 
@@ -154,14 +155,58 @@ void ConfigurationDatabase::Initialize() {
 	logger::info("Config APIs fully parsed!");
 }
 
-DescriptionConfiguration* ConfigurationDatabase::GetConfigurationForObject(RE::TESBoundObject* a_object) {
+std::string ConfigurationDatabase::GetDescriptionForObject(RE::TESBoundObject* a_object) {
 	if (!a_object) {
-		return nullptr;
+		return "";
+	}
+
+	if (scriptDescriptionMap.contains(a_object->formID)) {
+		return scriptDescriptionMap[a_object->formID]; 
 	}
 
 	if (descriptionMap.contains(a_object->formID)) {
 		return descriptionMap[a_object->formID];
 	}
 
-	return nullptr;
+	return "";
+}
+
+std::string ConfigurationDatabase::GetScriptDescriptionForObject(RE::TESBoundObject* a_object) {
+	if (!a_object) {
+		return "";
+	}
+
+	if (scriptDescriptionMap.contains(a_object->formID)) {
+		return scriptDescriptionMap[a_object->formID];
+	}
+
+	return "";
+}
+
+// Set description from papyrus
+void ConfigurationDatabase::SetScriptDescriptionForObject(RE::TESBoundObject* a_object, std::string a_description) {
+	if (!a_object) {
+		return;
+	}
+
+	if (scriptDescriptionMap.contains(a_object->formID)) {
+		scriptDescriptionMap.erase(a_object->formID);
+	}
+
+	scriptDescriptionMap[a_object->formID] = a_description;
+
+	return;
+}
+
+// Reset description from papyrus
+void ConfigurationDatabase::ResetScriptDescriptionnForObject(RE::TESBoundObject* a_object) {
+	if (!a_object) {
+		return;
+	}
+
+	if (scriptDescriptionMap.contains(a_object->formID)) {
+		scriptDescriptionMap.erase(a_object->formID);
+	}
+
+	return;
 }

@@ -5,4 +5,5 @@ set(headers ${headers}
 	src/Utils.h
 	src/MergeMapperPluginAPI.h
 	src/Settings.h
+	src/Papyrus.h
 )

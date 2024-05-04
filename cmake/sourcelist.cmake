@@ -5,4 +5,5 @@ set(sources ${sources}
 	src/Utils.cpp
 	src/MergeMapperPluginAPI.cpp
 	src/Settings.cpp
+	src/Papyrus.cpp
 )
