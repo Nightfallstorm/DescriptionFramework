@@ -6,4 +6,5 @@ set(headers ${headers}
 	src/MergeMapperPluginAPI.h
 	src/Settings.h
 	src/Papyrus.h
+	src/ItemCardFixer.h
 )

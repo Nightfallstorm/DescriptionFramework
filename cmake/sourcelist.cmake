@@ -6,4 +6,5 @@ set(sources ${sources}
 	src/MergeMapperPluginAPI.cpp
 	src/Settings.cpp
 	src/Papyrus.cpp
+	src/ItemCardFixer.cpp
 )

@@ -43,9 +43,14 @@ void InitializeLog()
 	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
 
 	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
-
+#ifdef _DEBUG
+	log->set_level(spdlog::level::debug);
+	log->flush_on(spdlog::level::debug);
+#else
 	log->set_level(spdlog::level::info);
 	log->flush_on(spdlog::level::info);
+#endif
+	
 
 	spdlog::set_default_logger(std::move(log));
 	spdlog::set_pattern("[%H:%M:%S:%e] %v"s);

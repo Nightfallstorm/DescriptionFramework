@@ -155,7 +155,8 @@ void ConfigurationDatabase::Initialize() {
 	logger::info("Config APIs fully parsed!");
 }
 
-std::string ConfigurationDatabase::GetDescriptionForObject(RE::TESBoundObject* a_object) {
+std::string ConfigurationDatabase::GetDescriptionForObject(RE::TESForm* a_object)
+{
 	if (!a_object) {
 		return "";
 	}
@@ -171,7 +172,8 @@ std::string ConfigurationDatabase::GetDescriptionForObject(RE::TESBoundObject* a
 	return "";
 }
 
-std::string ConfigurationDatabase::GetScriptDescriptionForObject(RE::TESBoundObject* a_object) {
+std::string ConfigurationDatabase::GetScriptDescriptionForObject(RE::TESForm* a_object)
+{
 	if (!a_object) {
 		return "";
 	}
@@ -184,7 +186,8 @@ std::string ConfigurationDatabase::GetScriptDescriptionForObject(RE::TESBoundObj
 }
 
 // Set description from papyrus
-void ConfigurationDatabase::SetScriptDescriptionForObject(RE::TESBoundObject* a_object, std::string a_description) {
+void ConfigurationDatabase::SetScriptDescriptionForObject(RE::TESForm* a_object, std::string a_description)
+{
 	if (!a_object) {
 		return;
 	}
@@ -199,7 +202,7 @@ void ConfigurationDatabase::SetScriptDescriptionForObject(RE::TESBoundObject* a_
 }
 
 // Reset description from papyrus
-void ConfigurationDatabase::ResetScriptDescriptionnForObject(RE::TESBoundObject* a_object) {
+void ConfigurationDatabase::ResetScriptDescriptionnForObject(RE::TESForm* a_object) {
 	if (!a_object) {
 		return;
 	}

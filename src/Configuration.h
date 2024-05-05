@@ -25,16 +25,16 @@ public:
 	void Initialize();
 
 	// Get object's description. Script descriptions take priority over descriptions from configuration files
-	std::string GetDescriptionForObject(RE::TESBoundObject* a_object);
+	std::string GetDescriptionForObject(RE::TESForm* a_object);
 
 	// Get object's description if it was set by a script
-	std::string GetScriptDescriptionForObject(RE::TESBoundObject* a_object);
+	std::string GetScriptDescriptionForObject(RE::TESForm* a_object);
 
 	// Set description from papyrus
-	void SetScriptDescriptionForObject(RE::TESBoundObject* a_object, std::string a_description);
+	void SetScriptDescriptionForObject(RE::TESForm* a_object, std::string a_description);
 
 	// Set from papyrus by a mod
-	void ResetScriptDescriptionnForObject(RE::TESBoundObject* a_object);
+	void ResetScriptDescriptionnForObject(RE::TESForm* a_object);
 
 private:
 	void parseConfigs(std::filesystem::path configFile);
