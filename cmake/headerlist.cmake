@@ -7,4 +7,5 @@ set(headers ${headers}
 	src/Settings.h
 	src/Papyrus.h
 	src/ItemCardFixer.h
+	src/DescriptionFrameworkAPI.h
 )

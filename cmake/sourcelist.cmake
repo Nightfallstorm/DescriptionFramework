@@ -7,4 +7,5 @@ set(sources ${sources}
 	src/Settings.cpp
 	src/Papyrus.cpp
 	src/ItemCardFixer.cpp
+	src/DescriptionFrameworkAPI.cpp
 )
