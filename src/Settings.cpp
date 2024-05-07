@@ -44,7 +44,7 @@ void Settings::Tweaks::Load(CSimpleIniA& a_ini)
 	detail::get_value(a_ini, heightScale, section, "fHeightScale", ";Item box will be X times taller/shorter when applying descriptions.");
 	detail::get_value(a_ini, widthScale, section, "fWidthScale", ";Item box will be X times wider/skinnier when applying descriptions");
 	detail::get_value(a_ini, heightOffset, section, "fHeightOffset", ";Item box will be X units higher/lower when applying descriptions. Useful when changing the height scale");
-	detail::get_value(a_ini, widthOffset, section, "fWidthScale", ";Item box will be X units to the right/left when applying descriptions. Useful when changing the width scale");
+	detail::get_value(a_ini, widthOffset, section, "fWidthOffset", ";Item box will be X units to the right/left when applying descriptions. Useful when changing the width scale");
 
 	logger::info("Loaded settings");
 	logger::info("prefix={}", prefix);
