@@ -30,6 +30,9 @@ public:
 	static inline constexpr auto itemInfoVar = "itemInfo";
 	static inline constexpr auto typeVar = "type";
 
+	static inline int debugBorder = 0xFC0303;
+	static inline int descriptionDebugBorder = 0x02f70f;
+
 	struct CollectDFVariables : RE::GFxValue::ObjectVisitor
 	{
 	public:
@@ -49,21 +52,22 @@ public:
 		// Collect DF variables so we can erase them when reverting description
 		virtual void Visit(const char* a_name, const RE::GFxValue& a_val) override
 		{
-			RE::GFxValue border;
+			RE::GFxValue borderColor;
+			RE::GFxValue borderNumber;
 
 			if (!a_val.IsDisplayObject()) {
 				return;
 			}
 
-			a_val.GetMember("border", &border);
-			if (border.IsBool() && border.GetBool()) {
+			a_val.GetMember("borderColor", &borderColor);
+			if (borderColor.IsNumber() && borderColor.GetNumber() == descriptionDebugBorder) {
 				return;
 			}
 
 			logger::debug("Applying debug border to {}", a_name);
 			RE::GFxValue displayVal = a_val;
 			displayVal.SetMember("border", true);
-			displayVal.SetMember("borderColor", 0xFC0303);
+			displayVal.SetMember("borderColor", debugBorder);
 		}
 	};
 
@@ -131,6 +135,7 @@ public:
 		}
 
 		// delete fixer;
+		delete fixer;
 
 		appliedDescription.SetBoolean(true);
 		a_itemInfo.SetMember(appliedDescriptionVar, appliedDescription);

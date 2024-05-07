@@ -115,7 +115,7 @@ void ItemCardFixer::fixBackground(const char* a_displayLabel)
 	
 	if (Settings::IsDebug()) {
 		displayLabel.SetMember("border", true);
-		displayLabel.SetMember("borderColor", 0xFF33FF);
+		displayLabel.SetMember("borderColor", descriptionDebugBorder);
 	}
 }
 
