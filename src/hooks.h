@@ -145,6 +145,7 @@ namespace hooks
 			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, RE::UIMessage& a_message)
 			{
 				auto result = func(a_menu, a_message);
+				ItemCardFixer::uiMovie = a_menu->uiMovie;
 				applyDescription(a_menu);
 				return result;
 			};

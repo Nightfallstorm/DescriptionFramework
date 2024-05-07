@@ -32,6 +32,9 @@ public:
 
 	static inline int debugBorder = 0xFC0303;
 	static inline int descriptionDebugBorder = 0x02f70f;
+	//static inline RE::GFxValue wideBackground;
+
+	static inline RE::GPtr<RE::GFxMovieView> uiMovie;
 
 	struct CollectDFVariables : RE::GFxValue::ObjectVisitor
 	{
@@ -119,6 +122,22 @@ public:
 		// Setup data for fixing
 		ItemCardFixer* fixer = new ItemCardFixer(a_itemCard, a_itemInfo, a_description.GetString(), (ItemCardType)a_type.GetUInt());
 
+		//if (wideBackground.IsUndefined()) {
+		//	// Second, apply a blank itemInfo to reset SWF elements
+		//	RE::GFxValue origType;
+		//	a_itemInfo.GetMember("type", &origType);
+		//	a_itemInfo.SetMember("type", ICT_NONE);
+
+		//	a_itemCard.SetMember("itemInfo", a_itemInfo);  // This will skip to the empty itemCard frame, clearing out all previous SWF elements we touched
+
+		//	a_itemCard.GetMember("background", )
+
+		//	// Third, reapply original itemInfo to get the item card where it should be
+		//	a_itemInfo.SetMember("type", origType);
+		//	a_itemCard.SetMember("itemInfo", a_itemInfo);	
+		//}
+
+
 		// First, fix up item info to apply the description where needed
 		fixer->applyDescription();
 
@@ -203,6 +222,7 @@ private:
 	}
 	void handleEffects();
 	void handleSoulLVL();
+	void fixTest(float x, float y, float width, float height);
 	void fixHTML(const char* a_displayVariable, const char* a_descriptionVariable);
 	void fixBackground(const char* a_displayLabel);
 
