@@ -6,6 +6,8 @@
 class Settings
 {
 public:
+	static bool IsDebug();
+
 	[[nodiscard]] static Settings* GetSingleton();
 
 	void Load();
@@ -105,6 +107,11 @@ public:
 		std::string color{ "" };
 		int size{ -1 };
 		std::string alignment{ "" };
+		bool debugMode{ false };
+		float heightScale{ 1.0f };
+		float widthScale{ 1.0f };
+		float heightOffset{ 0.0f };
+		float widthOffset{ 0.0f };
 	} tweaks;
 
 private:

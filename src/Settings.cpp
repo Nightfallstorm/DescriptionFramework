@@ -1,5 +1,14 @@
 #include "Settings.h"
 
+bool Settings::IsDebug()
+{
+#ifdef _DEBUG
+	return true;
+#else
+	return Settings::GetSingleton()->tweaks.debugMode;
+#endif
+}
+
 Settings* Settings::GetSingleton()
 {
 	static Settings singleton;
@@ -31,6 +40,11 @@ void Settings::Tweaks::Load(CSimpleIniA& a_ini)
 	detail::get_value(a_ini, color, section, "sColor", ";Custom font color for each description in the form of a color hex (ex: #FFFFFF is white, #000000 = black)\n;For a color picker website, try https://www.w3schools.com/colors/colors_picker.asp\n;Leave empty for default");
 	detail::get_value(a_ini, size, section, "iSize", ";Custom font size for each description\n;Note: Too high of a font size can end up squeezing the text horizontally, shrinking it as a result\n;-1 for default");
 	detail::get_value(a_ini, alignment, section, "sAlignment", ";Custom alignment setting (left, center, right). Leave blank for default");
+	detail::get_value(a_ini, debugMode, section, "bDebugMode", ";Enable debug mode. This mode applies a test description to every supported object, adds borders and turns on debug logging. Very useful to test when a bug is suspected");
+	detail::get_value(a_ini, heightScale, section, "fHeightScale", ";Item box will be X times taller/shorter when applying descriptions.");
+	detail::get_value(a_ini, widthScale, section, "fWidthScale", ";Item box will be X times wider/skinnier when applying descriptions");
+	detail::get_value(a_ini, heightOffset, section, "fHeightOffset", ";Item box will be X units higher/lower when applying descriptions. Useful when changing the height scale");
+	detail::get_value(a_ini, widthOffset, section, "fWidthScale", ";Item box will be X units to the right/left when applying descriptions. Useful when changing the width scale");
 
 	logger::info("Loaded settings");
 	logger::info("prefix={}", prefix);
@@ -39,4 +53,5 @@ void Settings::Tweaks::Load(CSimpleIniA& a_ini)
 	logger::info("color={}", color);
 	logger::info("size={}", size);
 	logger::info("alignment={}", alignment);
+	logger::info("debugMode={}", debugMode);
 }

@@ -1,12 +1,13 @@
 #pragma once
 #include "ItemCardFixer.h"
+#include "Settings.h"
 
-static void handleEffects(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleEffects()
 {
 	// Insert description into effects
 	auto effectsStr = std::string("");
 	RE::GFxValue effects;
-	a_itemInfo.GetMember("effects", &effects);
+	itemInfo.GetMember("effects", &effects);
 	if (effects.IsString() && std::strcmp(effects.GetString(), "undefined") && std::strcmp(effects.GetString(), "")) {
 		effectsStr = std::string(effects.GetString());
 		effectsStr.erase(remove(effectsStr.begin(), effectsStr.end(), ' '), effectsStr.end());
@@ -15,16 +16,16 @@ static void handleEffects(RE::GFxValue& a_itemInfo, const char* a_description)
 		}
 	}
 
-	auto effectsDesc = effectsStr + a_description;
-	a_itemInfo.SetMember("effects", effectsDesc.c_str());
+	auto effectsDesc = effectsStr + this->description;
+	itemInfo.SetMember("effects", effectsDesc.c_str());
 }
 
-static void handleSoulLVL(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleSoulLVL()
 {
 	// Append description to soulLVL, while faking as a book
 	auto soulStr = std::string("");
 	RE::GFxValue soulLVL;
-	a_itemInfo.GetMember("soulLVL", &soulLVL);
+	itemInfo.GetMember("soulLVL", &soulLVL);
 	if (soulLVL.IsString() && std::strcmp(soulLVL.GetString(), "undefined") && std::strcmp(soulLVL.GetString(), "")) {
 		soulStr = std::string(soulLVL.GetString());
 		soulStr.erase(remove(soulStr.begin(), soulStr.end(), ' '), soulStr.end());
@@ -33,105 +34,220 @@ static void handleSoulLVL(RE::GFxValue& a_itemInfo, const char* a_description)
 		}
 	}
 
-	auto soulsDesc = soulStr + a_description;
-	a_itemInfo.SetMember("description", soulsDesc.c_str());
-	a_itemInfo.SetMember(ItemCardFixer::typeVar, ItemCardType::ICT_BOOK);
+	auto soulsDesc = soulStr + this->description;
+	itemInfo.SetMember("description", soulsDesc.c_str());
+	itemInfo.SetMember(ItemCardFixer::typeVar, ItemCardType::ICT_BOOK);
 }
 
-void ItemCardFixer::handleArmor(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::fixHTML(const char* a_displayVariable, const char* a_descriptionVariable)
 {
-	handleEffects(a_itemInfo, a_description);
+	RE::GFxValue displayLabel;
+	RE::GFxValue descriptionLabel;
+	RE::GFxValue heightLabel;
+	itemCard.GetMember(a_displayVariable, &displayLabel);
+	itemInfo.GetMember(a_descriptionVariable, &descriptionLabel);
+	if (displayLabel.IsDisplayObject() && descriptionLabel.IsString()) {
+		displayLabel.SetMember("textAutoSize", "shrink");
+		displayLabel.SetTextHTML(descriptionLabel.GetString());
+
+		// Make text clearer for easier reading
+		displayLabel.SetMember("antiAliasType", "advanced");
+		displayLabel.SetMember("gridFitType", "pixel");
+	}	
 }
-void ItemCardFixer::handleWeapon(RE::GFxValue& a_itemInfo, const char* a_description)
+
+void ItemCardFixer::fixBackground(const char* a_displayLabel)
 {
-	handleEffects(a_itemInfo, a_description);
+// Increase the background size, and the display label to match
+	float heightScale = Settings::GetSingleton()->tweaks.heightScale;
+	float widthScale = Settings::GetSingleton()->tweaks.widthScale;
+	float heightOffset = Settings::GetSingleton()->tweaks.heightOffset;
+	float widthOffset = Settings::GetSingleton()->tweaks.widthOffset;
+
+	RE::GFxValue background;
+	RE::GFxValue backgroundFixed;
+	RE::GFxValue displayLabel;
+	RE::GFxValue backgroundX;
+	RE::GFxValue backgroundY;
+	RE::GFxValue displayX;
+	RE::GFxValue displayY;
+	RE::GFxValue backgroundHeight;
+	RE::GFxValue backgroundWidth;
+
+	itemCard.GetMember("background", &background);
+	itemCard.GetMember(a_displayLabel, &displayLabel);
+
+	background.GetMember("DF_backgroundFixed", &backgroundFixed);
+	background.GetMember("_height", &backgroundHeight);
+	background.GetMember("_width", &backgroundWidth);
+	background.GetMember("_y", &backgroundY);
+	background.GetMember("_x", &backgroundX);
+	displayLabel.GetMember("_x", &displayX);
+	displayLabel.GetMember("_y", &displayY);
+
+	// If background is already scaled, don't scale it again
+	if (!backgroundFixed.IsBool() || !backgroundFixed.GetBool()) {
+		backgroundHeight.SetNumber(backgroundHeight.GetNumber() * heightScale);
+		background.SetMember("_height", backgroundHeight);
+		backgroundY.SetNumber(backgroundY.GetNumber() + heightOffset);
+		background.SetMember("_y", backgroundY);
+
+		backgroundWidth.SetNumber(backgroundWidth.GetNumber() * widthScale);
+		background.SetMember("_width", backgroundWidth);
+		backgroundX.SetNumber(backgroundX.GetNumber() + widthOffset);
+		background.SetMember("_x", backgroundX);
+
+
+		background.SetMember("DF_backgroundFixed", true);
+		
+		//RE::GFxMovieRoot* a_root = **(reinterpret_cast<RE::GFxMovieRoot***>(&background));
+		//auto newRect = RE::GRectF();
+		//newRect.left = 30;
+		//newRect.right = 370;
+		//newRect.bottom = 44;
+		//newRect.top = 79;
+
+		//struct ImportVisitor : RE::GFxMovieDef::ImportVisitor
+		//{
+		//	struct MyResourceVisitor : RE::GFxMovieDef::ResourceVisitor
+		//	{
+		//		virtual void Visit(RE::GFxMovieDef* a_movieDef, RE::GFxResource* a_resource, RE::GFxResourceID a_id, const char* a_exportName) override
+		//		{
+		//			logger::info("Visiting {} {}",  a_id.GetIDValue(), a_exportName);
+		//			if (a_exportName != nullptr && !strcmp(a_exportName, "Info card slim")) {
+		//				//auto resource = reinterpret_cast<RE::GFxCharacterDef*>(a_resource);
+		//				int type = (int)a_resource->GetResourceType();
+		//				logger::info("{}", type);
+		//			}
+		//		}  // 01
+		//	} myresourcevisitor;
+
+		//	// add
+		//	virtual void Visit(RE::GFxMovieDef* a_parentDef, RE::GFxMovieDef* a_importDef, const char* a_importedMovieFilename) override
+		//	{
+		//		logger::info("Visiting {}", a_importedMovieFilename);
+		//		a_importDef->VisitResources(&myresourcevisitor, (RE::GFxMovieDef::VisitResourceMask)0x3FF);
+		//		a_importDef->VisitImportedMovies(this);
+		//	}  // 01
+		//} myImportVisitor;
+		//a_root->GetMovieDef()->VisitImportedMovies(&myImportVisitor);
+	}
+	
+	auto bottomY = backgroundY.GetNumber() + backgroundHeight.GetNumber();
+	auto newDisplayHeight = bottomY - displayY.GetNumber();
+	newDisplayHeight -= 15; // Padding
+	displayLabel.SetMember("_height", newDisplayHeight);
+
+	displayX.SetNumber(backgroundX.GetNumber() + 15);
+	displayLabel.SetMember("_x", displayX);
+	auto rightX = backgroundX.GetNumber() + backgroundWidth.GetNumber();
+	auto newDisplayWidth = rightX - displayX.GetNumber();
+	newDisplayWidth -= 15;  // Padding
+	displayLabel.SetMember("_width", newDisplayWidth);
+	
+	if (Settings::IsDebug()) {
+		displayLabel.SetMember("border", true);
+		displayLabel.SetMember("borderColor", 0xFF33FF);
+	}
 }
-void ItemCardFixer::handleMisc(RE::GFxValue& a_itemInfo, const char* a_description)
+
+void ItemCardFixer::handleArmor()
+{
+	handleEffects();
+}
+void ItemCardFixer::handleWeapon()
+{
+	handleEffects();
+}
+void ItemCardFixer::handleMisc()
 {
 	// Fake MISC items as books
-	a_itemInfo.SetMember("description", a_description);
-	a_itemInfo.SetMember(typeVar, ItemCardType::ICT_BOOK);
+	itemInfo.SetMember("description", this->description);
+	itemInfo.SetMember(typeVar, ItemCardType::ICT_BOOK);
 }
-void ItemCardFixer::handleBook(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleBook()
 {
 	// Append DF's description to the books
 	auto origDescStr = std::string("");
-	RE::GFxValue description;
-	a_itemInfo.GetMember("description", &description);
-	if (description.IsString() && std::strcmp(description.GetString(), "undefined") && std::strcmp(description.GetString(), "")) {
-		origDescStr = std::string(description.GetString());
+	RE::GFxValue desc;
+	itemInfo.GetMember("description", &desc);
+	if (desc.IsString() && std::strcmp(desc.GetString(), "undefined") && std::strcmp(desc.GetString(), "")) {
+		origDescStr = std::string(desc.GetString());
 		origDescStr.erase(remove(origDescStr.begin(), origDescStr.end(), ' '), origDescStr.end());
 		if (!origDescStr.empty()) {
-			origDescStr = std::string(description.GetString()) + "\n";
+			origDescStr = std::string(desc.GetString()) + "\n";
 		}
 	}
 
-	auto newDesc = origDescStr + a_description;
-	a_itemInfo.SetMember("description", newDesc.c_str());
+	auto newDesc = origDescStr + this->description;
+	itemInfo.SetMember("description", newDesc.c_str());
 }
-void ItemCardFixer::handleFood(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleFood()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
-void ItemCardFixer::handlePotion(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handlePotion()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
-void ItemCardFixer::handleSpell(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleSpell()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
-void ItemCardFixer::handleIngredient(RE::GFxValue& a_itemInfo, const char* a_description) {
+void ItemCardFixer::handleIngredient()
+{
 	/* unsupported*/
 }
-void ItemCardFixer::handleKey(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleKey()
 {
 	// Fake KEY items as books
-	a_itemInfo.SetMember("description", a_description);
-	a_itemInfo.SetMember(typeVar, ItemCardType::ICT_BOOK);
+	itemInfo.SetMember("description", this->description);
+	itemInfo.SetMember(typeVar, ItemCardType::ICT_BOOK);
 }
-void ItemCardFixer::handleShout(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleShout()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
-void ItemCardFixer::handleActiveEffect(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleActiveEffect()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
-void ItemCardFixer::handleSoulGems(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleSoulGems()
 {
-	handleSoulLVL(a_itemInfo, a_description);
+	handleSoulLVL();
 }
-void ItemCardFixer::handleSpellDefault(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleSpellDefault()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
-void ItemCardFixer::handleList(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleList()
 {
 	/* unsupported*/
 }
-void ItemCardFixer::handleCraftEnchanting(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleCraftEnchanting()
 {
-	handleEffects(a_itemInfo, a_description);
-	handleSoulLVL(a_itemInfo, a_description);
+	handleEffects();
+	handleSoulLVL();
 }
-void ItemCardFixer::handleHousePart(RE::GFxValue& a_itemInfo, const char* a_description)
+void ItemCardFixer::handleHousePart()
 {
-	handleEffects(a_itemInfo, a_description);
+	handleEffects();
 }
 
-void ItemCardFixer::fixArmor(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	/* no fixing necessary */
+void ItemCardFixer::fixArmor()
+{
+	fixHTML("ApparelEnchantedLabel", "effects");
+	fixBackground("ApparelEnchantedLabel");
 }
-void ItemCardFixer::fixWeapon(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo)
+void ItemCardFixer::fixWeapon()
 {
 	// Remove weapon charge if there's no actual effects
 	RE::GFxValue weaponChargeLabel;
 	RE::GFxValue DFdescription;
 	RE::GFxValue effects;
-	a_itemCard.GetMember("WeaponChargeMeter", &weaponChargeLabel);
-	a_itemInfo.GetMember(descriptionVar, &DFdescription);
-	a_itemInfo.GetMember("effects", &effects);
+	itemCard.GetMember("WeaponChargeMeter", &weaponChargeLabel);
+	itemInfo.GetMember(descriptionVar, &DFdescription);
+	itemInfo.GetMember("effects", &effects);
 	logger::debug("types {} {} {}", weaponChargeLabel.GetType(), DFdescription.GetType(), effects.GetType());
 	if (weaponChargeLabel.IsDisplayObject() && DFdescription.IsString() && effects.IsString()) {
 		if (!strcmp(DFdescription.GetString(), effects.GetString())) {
@@ -144,260 +260,283 @@ void ItemCardFixer::fixWeapon(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo
 			logger::debug("Weapon Charge Label disabled");
 		}
 	}
+	fixHTML("WeaponEnchantedLabel", "effects");
+	fixBackground("WeaponEnchantedLabel");
 }
-void ItemCardFixer::fixMisc(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo)
+void ItemCardFixer::fixMisc()
 {
 	// MISC items are now books, fix the same way
-	fixBook(a_itemCard, a_itemInfo);
+	fixBook();
 }
-void ItemCardFixer::fixBook(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo)
+void ItemCardFixer::fixBook()
 {
 	// As a book, make it HTML
-	RE::GFxValue bookLabel;
-	RE::GFxValue description;
-	a_itemCard.GetMember("BookDescriptionLabel", &bookLabel);
-	a_itemInfo.GetMember("description", &description);
-	if (bookLabel.IsDisplayObject() && description.IsString()) {
-		bookLabel.SetTextHTML(description.GetString());
-	}
+	fixHTML("BookDescriptionLabel", "description");
+	fixBackground("BookDescriptionLabel");
 }
-void ItemCardFixer::fixFood(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	/* no fixing necessary */
+void ItemCardFixer::fixFood()
+{
+	fixHTML("PotionsLabel", "effects");
+	fixBackground("PotionsLabel");
 }
-void ItemCardFixer::fixPotion(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	/* no fixing necessary */
+void ItemCardFixer::fixPotion()
+{
+	fixHTML("PotionsLabel", "effects");
+	fixBackground("PotionsLabel");
 }
-void ItemCardFixer::fixSpell(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	/* no fixing necessary */
+void ItemCardFixer::fixSpell()
+{
+	fixHTML("MagicEffectsLabel", "effects");
+	//fixBackground("MagicEffectsLabel");
 }
-void ItemCardFixer::fixIngredient(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
+void ItemCardFixer::fixIngredient()
+{
 	/* unsupported */
 }
-void ItemCardFixer::fixKey(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	fixBook(a_itemCard, a_itemInfo);
+void ItemCardFixer::fixKey()
+{
+	fixBook();
 }
-void ItemCardFixer::fixShout(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
+void ItemCardFixer::fixShout()
+{
 	// As a shout, use text auto shrink
-	RE::GFxValue shoutEffectsLabel;
-	a_itemCard.GetMember("ShoutEffectsLabel", &shoutEffectsLabel);
-	if (shoutEffectsLabel.IsDisplayObject()) {
-		shoutEffectsLabel.SetMember("textAutoSize", "shrink");
-	}
+	fixHTML("ShoutEffectsLabel", "effects");
+	// TODO: Can't fix shouts since it will clobber over other elements
 }
-void ItemCardFixer::fixActiveEffect(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	/* no fixing necessary */
+void ItemCardFixer::fixActiveEffect()
+{
+	fixSpell();
+	fixBackground("MagicEffectsLabel");
 }
-void ItemCardFixer::fixSoulGems(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo)
+void ItemCardFixer::fixSoulGems()
 {
 	// Soul gems are faked as books now, fix up as a book
-	fixBook(a_itemCard, a_itemInfo);
+	fixBook();
 }
-void ItemCardFixer::fixSpellDefault(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {}
-void ItemCardFixer::fixList(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {}
-void ItemCardFixer::fixCraftEnchanting(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {
-	fixSoulGems(a_itemCard, a_itemInfo);
-}
-void ItemCardFixer::fixHousePart(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo) {}
-
-void ItemCardFixer::applyDescriptionToItemInfo(RE::GFxValue& a_itemInfo, const char* a_description, ItemCardType a_type)
+void ItemCardFixer::fixSpellDefault()
 {
-	switch (a_type) {
+	fixSpell();
+	fixBackground("MagicEffectsLabel");
+}
+void ItemCardFixer::fixList()
+{
+	/* unsupported */
+}
+void ItemCardFixer::fixCraftEnchanting()
+{
+	fixHTML("SoulLevel", "soulLVL");
+
+	fixHTML("EnchantmentLabel", "effects");
+
+	fixBackground("SoulLevel");
+
+	fixBackground("EnchantmentLabel");
+}
+void ItemCardFixer::fixHousePart()
+{
+	fixSpell();
+}
+
+void ItemCardFixer::applyDescription()
+{
+	logger::info("Applying description {}", description);
+	switch (type) {
 	case ICT_ARMOR:
 		{
 			logger::debug("Handling armor");
-			handleArmor(a_itemInfo, a_description);
+			handleArmor();
 			break;
 		}
 	case ICT_WEAPON:
 		{
 			logger::debug("Handling weapon");
-			handleWeapon(a_itemInfo, a_description);
+			handleWeapon();
 			break;
 		}
 	case ICT_MISC:
 		{
 			logger::debug("Handling misc");
-			handleMisc(a_itemInfo, a_description);
+			handleMisc();
 			break;
 		}
 	case ICT_BOOK:
 		{
 			logger::debug("Handling book");
-			handleBook(a_itemInfo, a_description);
+			handleBook();
 			break;
 		}
 	case ICT_FOOD:
 		{
 			logger::debug("Handling food");
-			handleFood(a_itemInfo, a_description);
+			handleFood();
 			break;
 		}
 	case ICT_POTION:
 		{
 			logger::debug("Handling potion");
-			handlePotion(a_itemInfo, a_description);
+			handlePotion();
 			break;
 		}
 	case ICT_SPELL:
 		{
 			logger::debug("Handling spell");
-			handleSpell(a_itemInfo, a_description);
+			handleSpell();
 			break;
 		}
 	case ICT_INGREDIENT:
 		{
 			logger::debug("Handling ingredient");
-			handleIngredient(a_itemInfo, a_description);
+			handleIngredient();
 			break;
 		}
 	case ICT_KEY:
 		{
 			logger::debug("Handling key");
-			handleKey(a_itemInfo, a_description);
+			handleKey();
 			break;
 		}
 	case ICT_SHOUT:
 		{
 			logger::debug("Handling shout");
-			handleShout(a_itemInfo, a_description);
+			handleShout();
 			break;
 		}
 	case ICT_ACTIVE_EFFECT:
 		{
 			logger::debug("Handling active effect");
-			handleActiveEffect(a_itemInfo, a_description);
+			handleActiveEffect();
 			break;
 		}
 	case ICT_SOUL_GEMS:
 		{
 			logger::debug("Handling soul gem");
-			handleSoulGems(a_itemInfo, a_description);
+			handleSoulGems();
 			break;
 		}
 	case ICT_SPELL_DEFAULT:
 		{
 			logger::debug("Handling spell default");
-			handleSpellDefault(a_itemInfo, a_description);
+			handleSpellDefault();
 			break;
 		}
 	case ICT_LIST:
 		{
 			logger::debug("Handling list");
-			handleList(a_itemInfo, a_description);
+			handleList();
 			break;
 		}
 	case ICT_CRAFT_ENCHANTING:
 		{
 			logger::debug("Handling craft enchanting");
-			handleCraftEnchanting(a_itemInfo, a_description);
+			handleCraftEnchanting();
 			break;
 		}
 	case ICT_HOUSE_PART:
 		{
 			logger::debug("Handling house part");
-			handleHousePart(a_itemInfo, a_description);
+			handleHousePart();
 			break;
 		}
 	}
 }
 
-void ItemCardFixer::fixItemCardForDescription(RE::GFxValue& a_itemCard, RE::GFxValue& a_itemInfo, ItemCardType a_type)
+void ItemCardFixer::fixItemCard()
 {
-	switch (a_type) {
+	switch (type) {
 	case ICT_ARMOR:
 		{
 			logger::debug("Fixing armor");
-			fixArmor(a_itemCard, a_itemInfo);
+			fixArmor();
 			break;
 		}
 	case ICT_WEAPON:
 		{
 			logger::debug("Fixing weapon");
-			fixWeapon(a_itemCard, a_itemInfo);
+			fixWeapon();
 			break;
 		}
 	case ICT_MISC:
 		{
 			logger::debug("Fixing misc");
-			fixMisc(a_itemCard, a_itemInfo);
+			fixMisc();
 			break;
 		}
 	case ICT_BOOK:
 		{
 			logger::debug("Fixing book");
-			fixBook(a_itemCard, a_itemInfo);
+			fixBook();
 			break;
 		}
 	case ICT_FOOD:
 		{
 			logger::debug("Fixing food");
-			fixFood(a_itemCard, a_itemInfo);
+			fixFood();
 			break;
 		}
 	case ICT_POTION:
 		{
 			logger::debug("Fixing potion");
-			fixPotion(a_itemCard, a_itemInfo);
+			fixPotion();
 			break;
 		}
 	case ICT_SPELL:
 		{
 			logger::debug("Fixing spell");
-			fixSpell(a_itemCard, a_itemInfo);
+			fixSpell();
 			break;
 		}
 	case ICT_INGREDIENT:
 		{
 			logger::debug("Fixing ingredient");
-			fixIngredient(a_itemCard, a_itemInfo);
+			fixIngredient();
 			break;
 		}
 	case ICT_KEY:
 		{
 			logger::debug("Fixing key");
-			fixKey(a_itemCard, a_itemInfo);
+			fixKey();
 			break;
 		}
 	case ICT_SHOUT:
 		{
 			logger::debug("Fixing shout");
-			fixShout(a_itemCard, a_itemInfo);
+			fixShout();
 			break;
 		}
 	case ICT_ACTIVE_EFFECT:
 		{
 			logger::debug("Fixing active effect");
-			fixActiveEffect(a_itemCard, a_itemInfo);
+			fixActiveEffect();
 			break;
 		}
 	case ICT_SOUL_GEMS:
 		{
 			logger::debug("Fixing soul gem");
-			fixSoulGems(a_itemCard, a_itemInfo);
+			fixSoulGems();
 			break;
 		}
 	case ICT_SPELL_DEFAULT:
 		{
 			logger::debug("Fixing spell default");
-			fixSpellDefault(a_itemCard, a_itemInfo);
+			fixSpellDefault();
 			break;
 		}
 	case ICT_LIST:
 		{
 			logger::debug("Fixing list");
-			fixList(a_itemCard, a_itemInfo);
+			fixList();
 			break;
 		}
 	case ICT_CRAFT_ENCHANTING:
 		{
 			logger::debug("Fixing craft enchanting");
-			fixCraftEnchanting(a_itemCard, a_itemInfo);
+			fixCraftEnchanting();
 			break;
 		}
 	case ICT_HOUSE_PART:
 		{
 			logger::debug("Fixing house part");
-			fixHousePart(a_itemCard, a_itemInfo);
+			fixHousePart();
 			break;
 		}
 	}

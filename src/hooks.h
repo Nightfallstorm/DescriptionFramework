@@ -2,17 +2,19 @@
 #include "Configuration.h"
 #include "Settings.h"
 #include "ItemCardFixer.h"
+#include "Utils.h"
 
 namespace hooks
 {
-	static inline std::string debugDescription = "<font color='#AAFF33'> My Custom <font color=\"#FFFFFF\">White</font> Text";
+	static inline std::string debugDescription = 
+		"<font color='#AAFF33'> My Custom <font color=\"#FFFFFF\">White</font> Text Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam risus massa, tincidunt nec pulvinar non, porttitor quis augue. Sed lacinia risus justo, eu pulvinar nulla dignissim nec.";
 
 	namespace ItemCardHooks {
 		static const char* getDescription(RE::TESForm* a_item)
 		{
-#ifdef _DEBUG
-			return debugDescription.c_str();
-#else
+			if (Settings::IsDebug()) {
+				return debugDescription.c_str();
+			}
 			auto settings = Settings::GetSingleton();
 			auto database = ConfigurationDatabase::GetSingleton();
 			if (database->GetDescriptionForObject(a_item).empty()) {
@@ -29,7 +31,6 @@ namespace hooks
 			description->append(suffix);
 			logger::info("Using description {}", description->c_str());
 			return description->c_str();
-#endif
 		}
 
 		// Embed description into the itemcard, our item card fixer will pull this out and apply it to items as needed
@@ -125,25 +126,26 @@ namespace hooks
 			}
 		};
 	}
-	
 
 	namespace MenuHooks
 	{
-		// TODO: ItemCard is not updated ASAP. Add more hook spots to force update?
+		static inline void applyDescription(RE::IMenu* a_menu, const char* itemCard = "_root.Menu_mc.itemCard")
+		{
+			RE::GFxValue a_itemCard;
+
+			bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, itemCard);
+			if (!hasItemCard) {
+				return;
+			}
+
+			ItemCardFixer::applyDescription(a_itemCard);
+		}
 		struct InventoryMenuHook
 		{
 			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, RE::UIMessage& a_message)
 			{
 				auto result = func(a_menu, a_message);
-
-				RE::GFxValue a_itemCard;
-
-				bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, "_root.Menu_mc.itemCard");
-				if (!hasItemCard) {
-					return result;
-				}
-
-				ItemCardFixer::applyDescription(a_itemCard);
+				applyDescription(a_menu);
 				return result;
 			};
 
@@ -157,20 +159,31 @@ namespace hooks
 				stl::write_vfunc<RE::InventoryMenu, InventoryMenuHook>();
 			}
 		};
+		struct InventoryMenuHookTwo
+		{
+			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				auto result = func(a_menu, a_interval, a_currentTime);
+				applyDescription(a_menu);
+				return result;
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				stl::write_vfunc<RE::InventoryMenu, InventoryMenuHookTwo>();
+			}
+		};
 		struct BarterMenuHook
 		{
 			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, RE::UIMessage& a_message)
 			{
 				auto result = func(a_menu, a_message);
-
-				RE::GFxValue a_itemCard;
-
-				bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, "_root.Menu_mc.itemCard");
-				if (!hasItemCard) {
-					return result;
-				}
-
-				ItemCardFixer::applyDescription(a_itemCard);
+				applyDescription(a_menu);
 				return result;
 			};
 
@@ -184,20 +197,31 @@ namespace hooks
 				stl::write_vfunc<RE::BarterMenu, BarterMenuHook>();
 			}
 		};
+		struct BarterMenuHookTwo
+		{
+			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				auto result = func(a_menu, a_interval, a_currentTime);
+				applyDescription(a_menu);
+				return result;
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				stl::write_vfunc<RE::BarterMenu, BarterMenuHookTwo>();
+			}
+		};
 		struct ContainerMenuHook
 		{
 			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, RE::UIMessage& a_message)
 			{
 				auto result = func(a_menu, a_message);
-
-				RE::GFxValue a_itemCard;
-
-				bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, "_root.Menu_mc.itemCard");
-				if (!hasItemCard) {
-					return result;
-				}
-
-				ItemCardFixer::applyDescription(a_itemCard);
+				applyDescription(a_menu);
 				return result;
 			};
 
@@ -211,20 +235,31 @@ namespace hooks
 				stl::write_vfunc<RE::ContainerMenu, ContainerMenuHook>();
 			}
 		};
+		struct ContainerMenuHookTwo
+		{
+			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				auto result = func(a_menu, a_interval, a_currentTime);
+				applyDescription(a_menu);
+				return result;
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				stl::write_vfunc<RE::ContainerMenu, ContainerMenuHookTwo>();
+			}
+		};
 		struct GiftMenuHook
 		{
 			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, RE::UIMessage& a_message)
 			{
 				auto result = func(a_menu, a_message);
-
-				RE::GFxValue a_itemCard;
-
-				bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, "_root.Menu_mc.itemCard");
-				if (!hasItemCard) {
-					return result;
-				}
-
-				ItemCardFixer::applyDescription(a_itemCard);
+				applyDescription(a_menu);
 				return result;
 			};
 
@@ -238,20 +273,31 @@ namespace hooks
 				stl::write_vfunc<RE::GiftMenu, GiftMenuHook>();
 			}
 		};
+		struct GiftMenuHookTwo
+		{
+			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				auto result = func(a_menu, a_interval, a_currentTime);
+				applyDescription(a_menu);
+				return result;
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				stl::write_vfunc<RE::GiftMenu, GiftMenuHookTwo>();
+			}
+		};
 		struct MagicMenuHook
 		{
 			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, RE::UIMessage& a_message)
 			{
 				auto result = func(a_menu, a_message);
-
-				RE::GFxValue a_itemCard;
-
-				bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, "_root.Menu_mc.itemCard");
-				if (!hasItemCard) {
-					return result;
-				}
-
-				ItemCardFixer::applyDescription(a_itemCard);
+				applyDescription(a_menu);
 				return result;
 			};
 
@@ -265,23 +311,31 @@ namespace hooks
 				stl::write_vfunc<RE::MagicMenu, MagicMenuHook>();
 			}
 		};
+		struct MagicMenuHookTwo
+		{
+			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				auto result = func(a_menu, a_interval, a_currentTime);
+				applyDescription(a_menu);
+				return result;
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				stl::write_vfunc<RE::MagicMenu, MagicMenuHookTwo>();
+			}
+		};
 		struct CraftingMenuHook
 		{
 			static RE::UI_MESSAGE_RESULTS thunk(RE::CraftingMenu* a_menu, RE::UIMessage& a_message)
-			{
+			{ 
 				auto result = func(a_menu, a_message);
-
-				RE::GFxValue a_root;
-				RE::GFxValue a_config;
-				RE::GFxValue a_itemCard;
-				RE::GFxValue a_itemInfo;
-
-				bool hasItemCard = a_menu->uiMovie->GetVariable(&a_itemCard, "_root.Menu.ItemInfo");
-				if (!hasItemCard || !a_itemCard.IsObject()) {
-					return result;
-				}
-
-				ItemCardFixer::applyDescription(a_itemCard);
+				applyDescription(a_menu, "_root.Menu.ItemInfo");
 				return result;
 			};
 
@@ -295,14 +349,39 @@ namespace hooks
 				stl::write_vfunc<RE::CraftingMenu, CraftingMenuHook>();
 			}
 		};
+		struct CraftingMenuHookTwo
+		{
+			static RE::UI_MESSAGE_RESULTS thunk(RE::IMenu* a_menu, float a_interval, std::uint32_t a_currentTime)
+			{
+				auto result = func(a_menu, a_interval, a_currentTime);
+				applyDescription(a_menu, "_root.Menu.ItemInfo");
+				return result;
+			};
+
+			static inline std::uint32_t idx = 0x5;
+
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			// Install our hook at the specified address
+			static inline void Install()
+			{
+				stl::write_vfunc<RE::CraftingMenu, CraftingMenuHookTwo>();
+			}
+		};
 
 		static void Install() {
 			InventoryMenuHook::Install();
+			InventoryMenuHookTwo::Install();
 			BarterMenuHook::Install();
+			BarterMenuHookTwo::Install();
+			ContainerMenuHookTwo::Install();
 			ContainerMenuHook::Install();
 			GiftMenuHook::Install();
+			GiftMenuHookTwo::Install();
 			MagicMenuHook::Install();
+			MagicMenuHookTwo::Install();
 			CraftingMenuHook::Install();
+			CraftingMenuHookTwo::Install();
 		}
 	}
 
