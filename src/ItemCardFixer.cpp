@@ -99,38 +99,6 @@ void ItemCardFixer::fixBackground(const char* a_displayLabel)
 
 
 		background.SetMember("DF_backgroundFixed", true);
-		
-		//RE::GFxMovieRoot* a_root = **(reinterpret_cast<RE::GFxMovieRoot***>(&background));
-		//auto newRect = RE::GRectF();
-		//newRect.left = 30;
-		//newRect.right = 370;
-		//newRect.bottom = 44;
-		//newRect.top = 79;
-
-		//struct ImportVisitor : RE::GFxMovieDef::ImportVisitor
-		//{
-		//	struct MyResourceVisitor : RE::GFxMovieDef::ResourceVisitor
-		//	{
-		//		virtual void Visit(RE::GFxMovieDef* a_movieDef, RE::GFxResource* a_resource, RE::GFxResourceID a_id, const char* a_exportName) override
-		//		{
-		//			logger::info("Visiting {} {}",  a_id.GetIDValue(), a_exportName);
-		//			if (a_exportName != nullptr && !strcmp(a_exportName, "Info card slim")) {
-		//				//auto resource = reinterpret_cast<RE::GFxCharacterDef*>(a_resource);
-		//				int type = (int)a_resource->GetResourceType();
-		//				logger::info("{}", type);
-		//			}
-		//		}  // 01
-		//	} myresourcevisitor;
-
-		//	// add
-		//	virtual void Visit(RE::GFxMovieDef* a_parentDef, RE::GFxMovieDef* a_importDef, const char* a_importedMovieFilename) override
-		//	{
-		//		logger::info("Visiting {}", a_importedMovieFilename);
-		//		a_importDef->VisitResources(&myresourcevisitor, (RE::GFxMovieDef::VisitResourceMask)0x3FF);
-		//		a_importDef->VisitImportedMovies(this);
-		//	}  // 01
-		//} myImportVisitor;
-		//a_root->GetMovieDef()->VisitImportedMovies(&myImportVisitor);
 	}
 	
 	auto bottomY = backgroundY.GetNumber() + backgroundHeight.GetNumber();

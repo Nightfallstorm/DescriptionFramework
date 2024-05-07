@@ -34,7 +34,7 @@ public:
 	{
 	public:
 		// Collect DF variables so we can erase them when reverting description
-		virtual void Visit(const char* a_name, const RE::GFxValue& a_val) override {
+		virtual void Visit(const char* a_name, [[maybe_unused]] const RE::GFxValue& a_val) override {
 			if (std::string(a_name).find("DF_") != std::string::npos) {
 				collectedVariableNames.emplace_back(a_name);
 			}

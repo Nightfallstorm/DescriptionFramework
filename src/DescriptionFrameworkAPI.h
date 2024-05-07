@@ -27,7 +27,7 @@ namespace DescriptionFrameworkAPI
 		// Gets the DescriptionFramework build number
 		virtual unsigned int GetBuildNumber() = 0;
 
-		const virtual const char* GetDescription(RE::TESForm* a_form) = 0;
+		virtual const char* GetDescription(RE::TESForm* a_form) = 0;
 	};
 
 }  // namespace DescriptionFrameworkAPI

@@ -17,7 +17,7 @@ namespace DescriptionFrameworkAPI
 			return (Version::MAJOR >> 8) + (Version::MINOR >> 4) + Version::PATCH;
 		};
 
-		const virtual const char* GetDescription(RE::TESForm* a_form){
+		virtual const char* GetDescription(RE::TESForm* a_form){
 			auto result = ConfigurationDatabase::GetSingleton()->GetDescriptionForObject(a_form).c_str();
 			return result;
 		};
