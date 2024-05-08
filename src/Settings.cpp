@@ -41,10 +41,10 @@ void Settings::Tweaks::Load(CSimpleIniA& a_ini)
 	detail::get_value(a_ini, size, section, "iSize", ";Custom font size for each description\n;Note: Too high of a font size can end up squeezing the text horizontally, shrinking it as a result\n;-1 for default");
 	detail::get_value(a_ini, alignment, section, "sAlignment", ";Custom alignment setting (left, center, right). Leave blank for default");
 	detail::get_value(a_ini, debugMode, section, "bDebugMode", ";Enable debug mode. This mode applies a test description to every supported object, adds borders and turns on debug logging. Very useful to test when a bug is suspected");
-	detail::get_value(a_ini, heightScale, section, "fHeightScale", ";Item box will be X times taller/shorter when applying descriptions.");
-	detail::get_value(a_ini, widthScale, section, "fWidthScale", ";Item box will be X times wider/skinnier when applying descriptions");
-	detail::get_value(a_ini, heightOffset, section, "fHeightOffset", ";Item box will be X units higher/lower when applying descriptions. Useful when changing the height scale");
-	detail::get_value(a_ini, widthOffset, section, "fWidthOffset", ";Item box will be X units to the right/left when applying descriptions. Useful when changing the width scale");
+	//detail::get_value(a_ini, heightScale, section, "fHeightScale", ";Item box will be X times taller/shorter when applying descriptions.");
+	//detail::get_value(a_ini, widthScale, section, "fWidthScale", ";Item box will be X times wider/skinnier when applying descriptions");
+	//detail::get_value(a_ini, heightOffset, section, "fHeightOffset", ";Item box will be X units higher/lower when applying descriptions. Useful when changing the height scale");
+	//detail::get_value(a_ini, widthOffset, section, "fWidthOffset", ";Item box will be X units to the right/left when applying descriptions. Useful when changing the width scale");
 
 	logger::info("Loaded settings");
 	logger::info("prefix={}", prefix);
