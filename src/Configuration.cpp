@@ -63,7 +63,8 @@ void ConfigurationDatabase::parseLine(std::string line)
 		logger::error("		Invalid line setup, not enough info!");
 		return;
 	}
-	auto object = GetFormFromString<RE::TESBoundObject>(tokens[0]);
+	auto object = GetFormFromString<RE::TESForm>(tokens[0]);
+
 	auto& description = tokens[1];
 	int priority = 0;
 	if (tokens.size() >= 3) {
@@ -85,7 +86,7 @@ void ConfigurationDatabase::parseLine(std::string line)
 	}
 
 	tempMap[object->formID] = { description, priority };
-	logger::info("		Entry inserted successfully!");
+	logger::info("		Entry with description \"{}\" inserted successfully!", description);
 }
 
 void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
@@ -104,11 +105,6 @@ void ConfigurationDatabase::parseConfigs(std::filesystem::path configFile)
 		} catch (...) {
 			logger::warn("	Error parsing line {}", line);
 		}
-	}
-
-	// Convert tempMap to the description map
-	for (auto& [formID, config] : tempMap) {
-		descriptionMap.emplace(formID, config.first);
 	}
 }
 
@@ -152,6 +148,12 @@ void ConfigurationDatabase::Initialize() {
 		}	
 	}
 
+	// Convert tempMap to the description map
+	for (auto& [formID, config] : tempMap) {
+		logger::debug("Emplacing {:x} with {}", formID, config.first);
+		descriptionMap.emplace(formID, config.first);
+	}
+
 	logger::info("Config APIs fully parsed!");
 }
 
@@ -166,7 +168,18 @@ std::string ConfigurationDatabase::GetDescriptionForObject(RE::TESForm* a_object
 	}
 
 	if (descriptionMap.contains(a_object->formID)) {
+		logger::debug("Using entry {} for {:x}", descriptionMap[a_object->formID], a_object->formID);
 		return descriptionMap[a_object->formID];
+	}
+
+	if (a_object->As<RE::BGSKeywordForm>()) {
+		auto keywordList = a_object->As<RE::BGSKeywordForm>();
+		for (auto keyword : keywordList->GetKeywords()) {
+			auto keywordDESC = GetDescriptionForObject(keyword);
+			if (keywordDESC != "") {
+				return keywordDESC;
+			}
+		}
 	}
 
 	return "";

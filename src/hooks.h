@@ -12,7 +12,9 @@ namespace hooks
 	namespace ItemCardHooks {
 		static const char* getDescription(RE::TESForm* a_item)
 		{
+			logger::info("Looking up {:x}", a_item ? a_item->formID : 0);
 			if (Settings::IsDebug()) {
+				logger::debug("Debug mode, using debug description");
 				return debugDescription.c_str();
 			}
 			auto settings = Settings::GetSingleton();
@@ -20,7 +22,7 @@ namespace hooks
 			if (database->GetDescriptionForObject(a_item).empty()) {
 				return "";
 			}
-			auto desc = database->GetDescriptionForObject(a_item).c_str();
+			auto desc = database->GetDescriptionForObject(a_item);
 			auto prefix = settings->tweaks.prefix != "" ? settings->tweaks.prefix + " " : "";
 			auto suffix = settings->tweaks.suffix != "" ? " " + settings->tweaks.suffix : "";
 			auto font = settings->GetFontString();
