@@ -47,8 +47,23 @@ void ItemCardFixer::fixHTML(const char* a_displayVariable, const char* a_descrip
 	itemCard.GetMember(a_displayVariable, &displayLabel);
 	itemInfo.GetMember(a_descriptionVariable, &descriptionLabel);
 	if (displayLabel.IsDisplayObject() && descriptionLabel.IsString()) {
+		
 		displayLabel.SetMember("textAutoSize", "shrink");
-		displayLabel.SetTextHTML(descriptionLabel.GetString());
+
+		if (REL::Module::IsVR()) {
+			// Dear Diary VR does not support EverywhereMediumFont in HTML. Swap it with EverywhereFont which is identical in default scenario
+			// This should fix Dear Diary VR without causing any visible difference on other UI mods
+			auto description = descriptionLabel.GetString();
+			std::regex everywhereMediumFont("EverywhereMediumFont");
+			auto newDescription = std::regex_replace(description, everywhereMediumFont, "EverywhereFont");
+			newDescription = std::string("<font face='$EverywhereFont'>") + newDescription;
+			displayLabel.SetTextHTML(newDescription.c_str());
+			logger::debug("HTML VR fixed with total text {}", newDescription.c_str());
+		} else {
+			displayLabel.SetTextHTML(descriptionLabel.GetString());
+			logger::debug("HTML fixed with total text {}", descriptionLabel.GetString());
+		}
+		
 
 		// Make text clearer for easier reading
 		displayLabel.SetMember("antiAliasType", "advanced");
