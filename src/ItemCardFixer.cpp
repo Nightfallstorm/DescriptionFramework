@@ -32,11 +32,10 @@ void ItemCardFixer::handleSoulLVL()
 		if (!soulStr.empty()) {
 			soulStr = std::string(soulLVL.GetString()) + "\n";
 		}
+		auto soulsDesc = soulStr + this->description;
+		itemInfo.SetMember("description", soulsDesc.c_str());
+		itemInfo.SetMember(ItemCardFixer::typeVar, ItemCardType::ICT_BOOK);
 	}
-
-	auto soulsDesc = soulStr + this->description;
-	itemInfo.SetMember("description", soulsDesc.c_str());
-	itemInfo.SetMember(ItemCardFixer::typeVar, ItemCardType::ICT_BOOK);
 }
 
 void ItemCardFixer::fixHTML(const char* a_displayVariable, const char* a_descriptionVariable)
@@ -354,6 +353,7 @@ void ItemCardFixer::fixCraftEnchanting()
 	fixBackground("SoulLevel");
 
 	fixBackground("EnchantmentLabel");
+	fixBook();
 }
 void ItemCardFixer::fixHousePart()
 {
